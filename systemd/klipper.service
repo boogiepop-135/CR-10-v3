@@ -1,0 +1,18 @@
+[Unit]
+Description=Klipper 3D Printer Firmware SV1
+Documentation=https://www.klipper3d.org/
+After=network-online.target
+Wants=udev.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+User=levi
+RemainAfterExit=yes
+WorkingDirectory=/home/levi/klipper
+EnvironmentFile=/home/levi/printer_data/systemd/klipper.env
+ExecStart=/home/levi/klippy-env/bin/python $KLIPPER_ARGS
+Restart=always
+RestartSec=10

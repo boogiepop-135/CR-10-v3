@@ -1,0 +1,66 @@
+========================================
+OrcaSlicer -> Klipper (Lenovo)
+IssaP RH BMG + Revo clone + boquilla 0.6
+========================================
+IP: http://192.168.100.16
+
+Klipper:
+  rotation_distance: 22.678   (partida; calibrar 100 mm)
+  gear_ratio: 50:17
+  nozzle_diameter: 0.600
+  sensor_type: ATC Semitec 104NT-4-R025H42G
+  pressure_advance: 0.02
+  PID: ya calibrado (no tocar)
+  max_velocity: 300 | max_accel: 1800
+  X: 0 .. 295
+  Y: -16 .. 284   (Y=0 = frente de la cama; imprimible Y 0..284)
+
+----------------------------------------
+MAQUINA (Orca — area imprimible, NO 300x300)
+----------------------------------------
+  Perfil: CR-10 V3 / 0.6
+  Nozzle: 0.6
+  # IssaP: boquilla ~16 mm al frente → pierdes ~16 mm atras
+  # Cama fisica 300x300, pero Klipper solo llega a:
+  Area imprimible (printable area): 295 x 284
+  Maximo X / Y / Z: 295 / 284 / 400
+  Origen: frente-izquierda (Y=0 = borde delantero)
+  G-code: Klipper
+  Emitir limites al G-Code: DESMARCAR
+  Vel X/Y: 250 | Z: 12 | E: 25
+  Accel X/Y: 1800 | extrusión: 1800
+
+  Start: START_PRINT BED=[bed_temperature_initial_layer_single] EXTRUDER=[nozzle_temperature_initial_layer]
+  End:   END_PRINT
+
+  En el menu: velocidad 100% (el 200% ya va en estos limites)
+
+----------------------------------------
+FILAMENTO PLA
+----------------------------------------
+  Temp: 205-215 / cama 60
+  Flujo: 0.98 (tras calibrar RD)
+  Volumetrico: 18-22 mm3/s (Revo ceramico 0.6)
+  PA en Orca: OFF (lo pone Klipper)
+  Retraccion: 0.6-1.0 mm @ 35 mm/s | Z-hop 0
+
+----------------------------------------
+FILAMENTO PETG
+----------------------------------------
+  Temp: 235-245 / cama 70-80
+  Flujo: 0.95-0.98
+  Volumetrico: 16-20 mm3/s
+  PA en Orca: OFF
+  Retraccion: 0.8-1.2 mm @ 30 mm/s | Z-hop 0.2
+
+----------------------------------------
+PROCESO (0.6)
+----------------------------------------
+  Capa: 0.28-0.36 | primera: 0.28-0.30
+  Ancho: ~0.62-0.68 | primera: ~0.68
+  Vel: 80 / 100 / 120 / travel 200 / 1a 30
+  Accel: 2000 / ext 1500 / 1a 800
+  Paredes: 3 (o 2 si ancho ~0.68)
+
+Cuando NO este imprimiendo: FIRMWARE_RESTART para cargar 104NT + limites 300/2000.
+Este cubo ya tiene los limites nuevos en caliente (sin cortar).

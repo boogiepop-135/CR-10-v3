@@ -1,0 +1,2 @@
+# SSD externo del NAS: montar automaticamente al reconectarlo
+SUBSYSTEM=="block", ACTION=="add|change", ENV{ID_FS_UUID}=="e25954c1-745c-426b-bc5e-71e98dcc12af", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nas.mount"

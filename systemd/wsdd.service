@@ -1,0 +1,8 @@
+[Unit]
+Description=WS-Device Discovery (aparece en Red de Windows)
+After=network-online.target
+[Service]
+ExecStart=/usr/bin/wsdd -w WORKGROUP
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target

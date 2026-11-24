@@ -1,0 +1,21 @@
+# secretos y datos locales: NUNCA subir
+rclone.conf
+*.tdb
+passdb*
+shadow*
+db.json
+*.key
+*.pem
+id_*
+*.log
+*.log.*
+klippy.log*
+nohup.out
+.tok
+token*
+
+# basura
+.partial/
+__pycache__/
+.DS_Store
+Thumbs.db
