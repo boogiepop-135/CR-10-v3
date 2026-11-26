@@ -49,10 +49,16 @@ for s in gdrive-backup gdrive-status; do
   echo '```'
 } > VERSIONES.md
 
-# --- control de secretos: no dejar pasar tokens ---
-if grep -rqiE 'refresh_token|\"access_token\"|api_key *= *[A-Za-z0-9]|passdb' --include='*' . 2>/dev/null; then
-  echo "ALTO: hay posibles secretos en el arbol, no commiteo:"
-  grep -rniE 'refresh_token|"access_token"|api_key *=|passdb' --include='*' . | head -5
+# --- control de secretos: busca VALORES, no palabras sueltas ---
+bad=""
+for f in rclone.conf passdb.tdb shadow db.json id_ed25519 id_rsa; do
+  hits=$(find . -name "$f" -not -path './.git/*' 2>/dev/null)
+  [ -n "$hits" ] && bad="$bad\n  archivo prohibido: $hits"
+done
+vals=$(grep -rnE 'ya29\.[A-Za-z0-9_/-]{25,}|"refresh_token"[[:space:]]*:[[:space:]]*"1/|BEGIN [A-Z ]*PRIVATE KEY|api_key[[:space:]]*[:=][[:space:]]*[A-Fa-f0-9]{16,}|password[[:space:]]*=[[:space:]]*[^ #%]{4,}' . --exclude-dir=.git 2>/dev/null | head -5)
+if [ -n "$bad" ] || [ -n "$vals" ]; then
+  echo "ALTO: hay secretos reales, no commiteo:"
+  printf "%b\n" "$bad"; printf '%s\n' "$vals"
   exit 2
 fi
 
