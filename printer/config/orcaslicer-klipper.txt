@@ -1,66 +1,110 @@
 ========================================
-OrcaSlicer -> Klipper (Lenovo)
-IssaP RH BMG + Revo clone + boquilla 0.6
+OrcaSlicer -> Klipper (Lenovo G560e)
+Stealthburner + HGX Lite 2.0 + Volcano | boquilla 0.4
+Actualizado: 2026-11-26
 ========================================
-IP: http://192.168.100.16
-
-Klipper:
-  rotation_distance: 22.678   (partida; calibrar 100 mm)
-  gear_ratio: 50:17
-  nozzle_diameter: 0.600
-  sensor_type: ATC Semitec 104NT-4-R025H42G
-  pressure_advance: 0.02
-  PID: ya calibrado (no tocar)
-  max_velocity: 300 | max_accel: 1800
-  X: 0 .. 295
-  Y: -16 .. 284   (Y=0 = frente de la cama; imprimible Y 0..284)
+IP: http://192.168.100.16   (Mainsail)
+NAS: \\192.168.100.16\nas  (Z:) / \\192.168.100.16\interno (Y:)
 
 ----------------------------------------
-MAQUINA (Orca — area imprimible, NO 300x300)
+IMPRESORA (lo que dice printer.cfg hoy)
 ----------------------------------------
-  Perfil: CR-10 V3 / 0.6
-  Nozzle: 0.6
-  # IssaP: boquilla ~16 mm al frente → pierdes ~16 mm atras
-  # Cama fisica 300x300, pero Klipper solo llega a:
-  Area imprimible (printable area): 295 x 284
-  Maximo X / Y / Z: 295 / 284 / 400
-  Origen: frente-izquierda (Y=0 = borde delantero)
-  G-code: Klipper
-  Emitir limites al G-Code: DESMARCAR
-  Vel X/Y: 250 | Z: 12 | E: 25
-  Accel X/Y: 1800 | extrusión: 1800
+  MCU: BTT SKR 2 (stm32f407xx) por USB
+       /dev/serial/by-id/usb-Klipper_stm32f407xx_3A002E000547393438343535-if00
+  Drivers: TMC2209 UART, run_current 0.8 A (X/Y/Z), 0.5 A extrusor, stealthChop siempre
+  Extrusor: HGX Lite 2.0 pancake, gear_ratio 50:17, rotation_distance 15.68
+  Termistor hotend: EPCOS 100K B57560G104F (104NT del nucleo Revo, NO EPCOS comun)
+  Boquilla: 0.400 | Camada: ATC Semitec 104GT-2
+  Volúmen: X -34 .. 290 | Y -26 .. 270 | Z 0 .. 400
+  Sonda: inductiva en ^PE4, x_offset 40, y_offset -3, z_offset 1.060
+  Malla cama: 11x10, de 10,10 a 245,240 (guardada como perfil "default")
+  Input shaper (ADXL medido 2026-08-27): ei X 32.6 Hz / ei Y 31.4 Hz
+  Presión de avance: 0 (el shaper + accel 1200 la hacen innecesaria)
 
-  Start: START_PRINT BED=[bed_temperature_initial_layer_single] EXTRUDER=[nozzle_temperature_initial_layer]
-  End:   END_PRINT
+----------------------------------------
+LIMITES DE VELOCIDAD (bajados por estabilidad)
+----------------------------------------
+  [printer]   max_velocity 250 | max_accel 1400 | square_corner_velocity 5
+              max_z_velocity 12 | max_z_accel 100
+  START_PRINT SET_VELOCITY_LIMIT VELOCITY=200 ACCEL=1200 SCV=5   <- rige cada trabajo
+  Por que: stealthChop a 0.8 A pierde torque en rapido; con cama movil (bed slinger)
+           1800 daba margen justo contra saltos de paso.
+  No subir de 1400 sin re-validar con un cubo de ringing.
 
-  En el menu: velocidad 100% (el 200% ya va en estos limites)
+----------------------------------------
+ORCA: G-CODES (los 5 perfiles ya dejan esto)
+----------------------------------------
+  Sabor de G-code: Klipper
+  Emitir limites de maquina al G-code: DESMARCARDO
+
+  Inicio:
+    START_PRINT BED=[bed_temperature_initial_layer_single] EXTRUDER=[nozzle_temperature_initial_layer]
+
+  Fin:
+    END_PRINT
+
+  Cambio de filamento: PAUSE  (y en Klipper existe el macro M600 que hace lo mismo,
+  por si un gcode viejo emite M600 -> antes abortaba con "Unknown command")
+
+  NO poner en el inicio: M104/M140/M190/M109/G28/G29/M82/M83.
+  START_PRINT ya hace: limites, PA=0, M220/M221 guardados, precalentado por escalones,
+  G28, BED_MESH_PROFILE LOAD=default y linea de purga en el borde delantero.
+
+  Cambios que requieren reiniciar Klipper: editar printer.cfg -> RESTART (no FIRMWARE_RESTART
+  si hay algo imprimiendo).
+
+----------------------------------------
+PERFILES DE MAQUINA EN ORCA (user\8eed6668-...\machine)
+----------------------------------------
+  Creality CR klipper                  flavor klipper, 250/1400, start/end OK
+  Creality CR-10 V3 0.4 nozzle - Copiar  idem (antes no tenia start/end)
+  Creality CR-10 V3 0.6 nozzle - Copiar  idem; OJO nozzle_diameter = 0.4 (revisar)
+  Creality CR-10 V3 08 nozzle -        idem; 200/1200 por ser 0.8
+  MyKlipper 0.4 nozzle - Copiar        idem (antes no tenia start/end)
+  Backup de los presets: Z:\respaldos\orca-user-20261126-124944.zip
+  Copia versionada:    github.com/boogiepop-135/CR-10-v3  carpeta orca/
 
 ----------------------------------------
 FILAMENTO PLA
 ----------------------------------------
-  Temp: 205-215 / cama 60
-  Flujo: 0.98 (tras calibrar RD)
-  Volumetrico: 18-22 mm3/s (Revo ceramico 0.6)
-  PA en Orca: OFF (lo pone Klipper)
+  Temp: 205-215 | Cama: 60
+  Flujo: ~0.98 | Volumetrico: 18-22 mm3/s (Volcano 0.4)
+  PA en Orca: OFF (Klipper lo deja en 0)
   Retraccion: 0.6-1.0 mm @ 35 mm/s | Z-hop 0
 
 ----------------------------------------
 FILAMENTO PETG
 ----------------------------------------
-  Temp: 235-245 / cama 70-80
-  Flujo: 0.95-0.98
-  Volumetrico: 16-20 mm3/s
-  PA en Orca: OFF
+  Temp: 235-245 | Cama: 70-80
+  Flujo: 0.95-0.98 | Volumetrico: 16-20 mm3/s
   Retraccion: 0.8-1.2 mm @ 30 mm/s | Z-hop 0.2
 
 ----------------------------------------
-PROCESO (0.6)
+PROCESO sugerido (0.4, estable)
 ----------------------------------------
-  Capa: 0.28-0.36 | primera: 0.28-0.30
-  Ancho: ~0.62-0.68 | primera: ~0.68
-  Vel: 80 / 100 / 120 / travel 200 / 1a 30
-  Accel: 2000 / ext 1500 / 1a 800
-  Paredes: 3 (o 2 si ancho ~0.68)
+  Capa: 0.2 normal | primera 0.24-0.28
+  Vel: perim 80-100 | relleno 120-150 | travel 200 | primera 25-30
+  Accel: 1200 general | 800 primera capa
+  Paredes: 3 | Relleno: 15-20% gyroid
 
-Cuando NO este imprimiendo: FIRMWARE_RESTART para cargar 104NT + limites 300/2000.
-Este cubo ya tiene los limites nuevos en caliente (sin cortar).
+----------------------------------------
+MACROS UTILES (botones en Mainsail)
+----------------------------------------
+  START_PRINT / END_PRINT     inicio y fin de trabajo
+  CALIBRAR_Z                  calienta 60/200, home y PROBE_CALIBRATE
+  MALLA_CAMA / G29            BED_MESH_CALIBRATE (despues SAVE_CONFIG)
+  AJUSTAR_TORNILLOS           SCREWS_TILT_CALCULATE
+  PID_CAMA / PID_EXTRUSOR     PID_CALIBRATE (guardar con SAVE_CONFIG)
+  SUBIR_Z / BAJAR_Z           mueve Z sin home (SET_KINEMATIC_POSITION)
+  GUARDAR_VELOCIDAD_FLUJO     guarda M220/M221 actuales en variables.cfg
+  RESET_VELOCIDAD_FLUJO       vuelve a 100%
+  TEST_SONDA                  OJO: usa BLTOUCH_DEBUG, no sirve con sonda
+                              inductiva -> mejor QUERY_PROBE
+
+----------------------------------------
+PENDIENTES
+----------------------------------------
+  1. client_id propio de Google Cloud para rclone (el compartido esta topado:
+     403 Quota exceeded del proyecto 202264815644).
+  2. 338 archivos de Drive/"Documentos" faltan en el NAS (565/903).
+  3. Borra o arregla el macro TEST_SONDA.
